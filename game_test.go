@@ -41,14 +41,41 @@ func TestNewBoard(t *testing.T) {
 }
 
 func TestBoard_PutPiece(t *testing.T) {
-	board := reversi.NewBoard()
-	if board[1][1] != reversi.CellEmpty {
-		t.Fatalf("invalid board")
-	}
 
-	board.PutPiece(1, 1, reversi.PieceBlack)
+	t.Run("空白セルに配置できる", func(t *testing.T) {
+		board := reversi.NewBoard()
+		if board[1][1] != reversi.CellEmpty {
+			t.Fatalf("invalid board")
+		}
 
-	if board[1][1] != reversi.CellBlack {
-		t.Errorf("expected %d, got %d", reversi.CellBlack, board[1][1])
-	}
+		board.PutPiece(1, 1, reversi.PieceBlack)
+
+		if board[1][1] != reversi.CellBlack {
+			t.Errorf("expected %d, got %d", reversi.CellBlack, board[1][1])
+		}
+	})
+	t.Run("空白以外のセルに配置できない", func(t *testing.T) {
+		tests := []struct {
+			row, column int
+			cell        reversi.Cell
+		}{
+			{3, 3, reversi.CellWhite},
+			{3, 4, reversi.CellBlack},
+			{4, 3, reversi.CellBlack},
+			{4, 4, reversi.CellWhite},
+		}
+		board := reversi.NewBoard()
+
+		for _, tt := range tests {
+			err := board.PutPiece(tt.row, tt.column, reversi.PieceBlack)
+			if err == nil {
+				t.Errorf("expected something error, got %v", err)
+			}
+			if board[tt.row][tt.column] != tt.cell {
+				t.Errorf("expected %d, got %d", tt.cell, board[tt.row][tt.column])
+			}
+
+		}
+
+	})
 }

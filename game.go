@@ -1,5 +1,7 @@
 package reversi
 
+import "fmt"
+
 type Piece bool
 
 const (
@@ -46,6 +48,9 @@ func NewBoard() Board {
 }
 
 func (b *Board) PutPiece(row, col int, piece Piece) error {
+	if b[row][col] != CellEmpty {
+		return fmt.Errorf("cell is not empty")
+	}
 	b[row][col] = cellFromPiece(piece)
 	return nil
 }
