@@ -39,3 +39,16 @@ func TestNewBoard(t *testing.T) {
 	}
 
 }
+
+func TestBoard_PutPiece(t *testing.T) {
+	board := reversi.NewBoard()
+	if board[1][1] != reversi.CellEmpty {
+		t.Fatalf("invalid board")
+	}
+
+	board.PutPiece(1, 1, reversi.PieceBlack)
+
+	if board[1][1] != reversi.CellBlack {
+		t.Errorf("expected %d, got %d", reversi.CellBlack, board[1][1])
+	}
+}

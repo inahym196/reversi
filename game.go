@@ -19,6 +19,17 @@ const (
 	CellWhite
 )
 
+func cellFromPiece(p Piece) Cell {
+	switch p {
+	case PieceBlack:
+		return CellBlack
+	case PieceWhite:
+		return CellWhite
+	default:
+		panic("invalid piece")
+	}
+}
+
 const (
 	BoardWidth = 8
 )
@@ -32,6 +43,11 @@ func NewBoard() Board {
 	b[4][3] = CellBlack
 	b[4][4] = CellWhite
 	return b
+}
+
+func (b *Board) PutPiece(row, col int, piece Piece) error {
+	b[row][col] = cellFromPiece(piece)
+	return nil
 }
 
 type Game struct {
