@@ -10,8 +10,8 @@ func TestNewBoard(t *testing.T) {
 	board := reversi.NewBoard()
 
 	tests := []struct {
-		x, y int
-		want reversi.Cell
+		row, col int
+		want     reversi.Cell
 	}{
 		{3, 3, reversi.CellWhite},
 		{3, 4, reversi.CellBlack},
@@ -19,21 +19,21 @@ func TestNewBoard(t *testing.T) {
 		{4, 4, reversi.CellWhite},
 	}
 	for _, tt := range tests {
-		if got := board[tt.y][tt.x]; got != tt.want {
-			t.Errorf("expected board[%d][%d] = %v, got %v", tt.y, tt.x, tt.want, got)
+		if got := board[tt.row][tt.col]; got != tt.want {
+			t.Errorf("expected board[%d][%d] = %v, got %v", tt.row, tt.col, tt.want, got)
 		}
 	}
 
-	for y := range reversi.BoardWidth {
-		for x := range reversi.BoardWidth {
-			if (y == 3 && x == 3) ||
-				(y == 3 && x == 4) ||
-				(y == 4 && x == 3) ||
-				(y == 4 && x == 4) {
+	for row := range reversi.BoardWidth {
+		for col := range reversi.BoardWidth {
+			if (row == 3 && col == 3) ||
+				(row == 3 && col == 4) ||
+				(row == 4 && col == 3) ||
+				(row == 4 && col == 4) {
 				continue
 			}
-			if board[y][x] != reversi.CellEmpty {
-				t.Errorf("expected board[%d][%d] to be Empty, got %v", y, x, board[y][x])
+			if board[row][col] != reversi.CellEmpty {
+				t.Errorf("expected board[%d][%d] to be Empty, got %v", row, col, board[row][col])
 			}
 		}
 	}
