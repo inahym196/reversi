@@ -37,7 +37,18 @@ func TestNewBoard(t *testing.T) {
 			}
 		}
 	}
-
+	nextMoves := board.GetNextMoves(reversi.PieceBlack)
+	expected := []reversi.Position{
+		{Row: 2, Column: 3},
+		{Row: 3, Column: 2},
+		{Row: 4, Column: 5},
+		{Row: 5, Column: 4},
+	}
+	for i := range nextMoves {
+		if nextMoves[i] != expected[i] {
+			t.Error("error")
+		}
+	}
 }
 
 func TestBoard_PutPiece(t *testing.T) {
