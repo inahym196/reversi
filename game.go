@@ -161,10 +161,23 @@ func (b *Board) GetNextMoves(piece Piece) (nextMoves []Position) {
 type Winner byte
 
 const (
-	WinnerNone byte = iota
+	WinnerNone Winner = iota
 	WinnerWhite
 	WinnerBlack
 )
+
+func (w Winner) String() string {
+	switch w {
+	case WinnerNone:
+		return "WinnerNone"
+	case WinnerWhite:
+		return "WinnerWhite"
+	case WinnerBlack:
+		return "WinnerBlack"
+	default:
+		panic("invalid winner")
+	}
+}
 
 type Game struct {
 	board     Board

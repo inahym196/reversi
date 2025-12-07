@@ -135,7 +135,7 @@ func TestGame_PutPiece(t *testing.T) {
 			t.Error("エラーが出るはずなのに出ていない")
 		}
 	})
-	t.Run("ピースを置くと色が変わる", func(t *testing.T) {
+	t.Run("NextMovesへ置くとNextPieceとNextMovesが更新され、Winnerは更新されない", func(t *testing.T) {
 		game := reversi.NewGame()
 		err := game.PutPiece(2, 3, reversi.PieceBlack)
 		if err != nil {
@@ -144,17 +144,13 @@ func TestGame_PutPiece(t *testing.T) {
 		if game.NextPiece() != reversi.PieceWhite {
 			t.Errorf("expected %v, got %v", reversi.PieceWhite, game.NextPiece())
 		}
-	})
-	t.Run("ピースを置くとnextMovesが変わる", func(t *testing.T) {
-		game := reversi.NewGame()
-		err := game.PutPiece(2, 3, reversi.PieceBlack)
-		if err != nil {
-			t.Fatalf("expected nil, got %v", err)
-		}
 		expected := []reversi.Position{{2, 2}, {2, 4}, {4, 2}}
 		nextMoves := game.NextMoves()
 		if !reflect.DeepEqual(expected, nextMoves) {
 			t.Errorf("expected %v, got %v", expected, nextMoves)
+		}
+		if game.Winner() != reversi.WinnerNone {
+			t.Errorf("expected %v, got %v", reversi.WinnerNone, game.Winner())
 		}
 	})
 }
