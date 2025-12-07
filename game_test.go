@@ -1,6 +1,7 @@
 package reversi_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/inahym196/reversi"
@@ -117,8 +118,57 @@ func TestBoard_PutPiece(t *testing.T) {
 			if board[tt.row][tt.column] != tt.cell {
 				t.Errorf("expected %d, got %d", tt.cell, board[tt.row][tt.column])
 			}
-
 		}
+	})
+}
 
+func TestNewGame(t *testing.T) {
+	game := reversi.NewGame()
+
+	t.Run("最初のnextMovesは4個", func(t *testing.T) {
+		expected := []reversi.Position{{2, 3}, {3, 2}, {4, 5}, {5, 4}}
+		nextMoves := game.NextMoves()
+		if !reflect.DeepEqual(expected, nextMoves) {
+			t.Errorf("expected %v, got %v", expected, nextMoves)
+		}
+	})
+
+	t.Run("最初のnextPieceはBlack", func(t *testing.T) {
+		nextPiece := game.NextPiece()
+		if nextPiece != reversi.PieceBlack {
+			t.Errorf("expected PieceBlack(%t), got %t", reversi.PieceBlack, nextPiece)
+		}
+	})
+}
+
+func TestGame_PutPiece(t *testing.T) {
+	t.Run("nextPiece以外は置けない", func(t *testing.T) {
+		game := reversi.NewGame()
+		err := game.PutPiece(2, 3, reversi.PieceWhite)
+		if err == nil {
+			t.Error("エラーが出るはずなのに出ていない")
+		}
+	})
+	t.Run("ピースを置くと色が変わる", func(t *testing.T) {
+		game := reversi.NewGame()
+		err := game.PutPiece(2, 3, reversi.PieceBlack)
+		if err != nil {
+			t.Fatalf("expected nil, got %v", err)
+		}
+		if game.NextPiece() != reversi.PieceWhite {
+			t.Errorf("expected PieceWhite(%t), got %t", reversi.PieceWhite, game.NextPiece())
+		}
+	})
+	t.Run("ピースを置くとnextMovesが変わる", func(t *testing.T) {
+		game := reversi.NewGame()
+		err := game.PutPiece(2, 3, reversi.PieceBlack)
+		if err != nil {
+			t.Fatalf("expected nil, got %v", err)
+		}
+		expected := []reversi.Position{{2, 2}, {2, 4}, {4, 2}}
+		nextMoves := game.NextMoves()
+		if !reflect.DeepEqual(expected, nextMoves) {
+			t.Errorf("expected %v, got %v", expected, nextMoves)
+		}
 	})
 }

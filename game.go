@@ -132,17 +132,65 @@ func (b *Board) GetNextMoves(piece Piece) (nextMoves []Position) {
 	return nextMoves
 }
 
+type Winner byte
+
+const (
+	WinnerNone byte = iota
+	WinnerWhite
+	WinnerBlack
+)
+
 type Game struct {
 	board     Board
+	nextPiece Piece
 	nextMoves []Position
+	winner    Winner
 }
 
 func NewGame() *Game {
-	b := NewBoard()
-	moves := b.GetNextMoves(PieceBlack)
-	return &Game{b, moves}
+	board := NewBoard()
+	return &Game{
+		board:     board,
+		nextPiece: PieceBlack,
+		nextMoves: board.GetNextMoves(PieceBlack),
+		winner:    Winner(WinnerNone),
+	}
 }
 
 func (g Game) Board() Board {
 	return g.board
+}
+
+func (g Game) NextPiece() Piece {
+	return g.nextPiece
+}
+
+func (g Game) NextMoves() []Position {
+	return g.nextMoves
+}
+
+func (g Game) Winner() Winner {
+	return g.winner
+}
+
+func (g *Game) isInNextMoves(row, col int) bool {
+	for _, move := range g.nextMoves {
+		if row == move.Row && col == move.Column {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) PutPiece(row, col int, piece Piece) error {
+	if g.nextPiece != piece {
+		return fmt.Errorf("相手のターンです")
+	}
+	if !g.isInNextMoves(row, col) {
+		return fmt.Errorf("無効な配置場所です")
+	}
+	g.board.PutPiece(row, col, piece)
+	g.nextPiece = g.nextPiece.Opponent()
+	g.nextMoves = g.board.GetNextMoves(g.nextPiece)
+	return nil
 }
