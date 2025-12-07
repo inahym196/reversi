@@ -138,8 +138,13 @@ func TestGame_PutPiece(t *testing.T) {
 	t.Run("NextMovesへ置くとNextPieceとNextMovesが更新され、Winnerは更新されない", func(t *testing.T) {
 		game := reversi.NewGame()
 		err := game.PutPiece(2, 3, reversi.PieceBlack)
+
 		if err != nil {
 			t.Fatalf("expected nil, got %v", err)
+		}
+		board := game.Board()
+		if board[2][3] != reversi.CellBlack {
+			t.Errorf("expected %v, got %v", reversi.CellBlack, board[2][3])
 		}
 		if game.NextPiece() != reversi.PieceWhite {
 			t.Errorf("expected %v, got %v", reversi.PieceWhite, game.NextPiece())
