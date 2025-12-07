@@ -11,9 +11,7 @@ const (
 	PieceWhite Piece = false
 )
 
-func (p Piece) Opponent() Piece {
-	return !p
-}
+func (p Piece) Opponent() Piece { return !p }
 
 func (p Piece) String() string {
 	switch p {

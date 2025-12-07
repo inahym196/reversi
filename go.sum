@@ -1,0 +1,6 @@
+github.com/inahym196/gameHub/backend v0.0.0-20251122140206-668373d360ad h1:e2slFWLvT4PkXYVPaeV9ScLHD/atExdFJ67mRym1+zY=
+github.com/inahym196/gameHub/backend v0.0.0-20251122140206-668373d360ad/go.mod h1:j7tu9iXTdROsp0AsnHaAS+P8ZhDLXyD6qwan9RTZwds=
+github.com/rs/xid v1.6.0 h1:fV591PaemRlL6JfRxGDEPl69wICngIQ3shQtzfy2gxU=
+github.com/rs/xid v1.6.0/go.mod h1:7XoLgs4eV+QndskICGsho+ADou8ySMSjJKDIan90Nz0=
+golang.org/x/time v0.14.0 h1:MRx4UaLrDotUKUdCIqzPC48t1Y9hANFKIRpNx+Te8PI=
+golang.org/x/time v0.14.0/go.mod h1:eL/Oa2bBBK0TkX57Fyni+NgnyQQN4LitPmob2Hjnqw4=
