@@ -53,29 +53,61 @@ func TestNewBoard(t *testing.T) {
 
 func TestBoard_PutPiece(t *testing.T) {
 
-	t.Run("空白セルに配置できる", func(t *testing.T) {
+	t.Run("初期配置から一つ置く", func(t *testing.T) {
 		board := reversi.NewBoard()
-		if board[1][1] != reversi.CellEmpty {
-			t.Fatalf("invalid board")
-		}
 
-		board.PutPiece(1, 1, reversi.PieceBlack)
+		board.PutPiece(2, 3, reversi.PieceBlack)
 
-		if board[1][1] != reversi.CellBlack {
-			t.Errorf("expected %d, got %d", reversi.CellBlack, board[1][1])
-		}
-	})
-	t.Run("空白以外のセルに配置できない", func(t *testing.T) {
 		tests := []struct {
-			row, column int
-			cell        reversi.Cell
+			row, col int
+			want     reversi.Cell
 		}{
-			{3, 3, reversi.CellWhite},
+			{2, 3, reversi.CellBlack},
+			{3, 3, reversi.CellBlack},
 			{3, 4, reversi.CellBlack},
 			{4, 3, reversi.CellBlack},
 			{4, 4, reversi.CellWhite},
 		}
+		for _, tt := range tests {
+			if got := board[tt.row][tt.col]; got != tt.want {
+				t.Errorf("expected board[%d][%d] = %v, got %v", tt.row, tt.col, tt.want, got)
+			}
+		}
+
+		for row := range reversi.BoardWidth {
+			for col := range reversi.BoardWidth {
+				if (row == 2 && col == 3) ||
+					(row == 3 && col == 3) ||
+					(row == 3 && col == 4) ||
+					(row == 4 && col == 3) ||
+					(row == 4 && col == 4) {
+					continue
+				}
+				if board[row][col] != reversi.CellEmpty {
+					t.Errorf("expected board[%d][%d] to be Empty, got %v", row, col, board[row][col])
+				}
+			}
+		}
+	})
+	t.Run("NextMoves以外には配置できない", func(t *testing.T) {
+		tests := []struct {
+			row, column int
+			cell        reversi.Cell
+		}{
+			{1, 1, reversi.CellEmpty},
+			{3, 3, reversi.CellWhite},
+		}
+
 		board := reversi.NewBoard()
+
+		for _, tt := range tests {
+			for _, moves := range board.GetNextMoves(reversi.PieceBlack) {
+				p := reversi.Position{tt.row, tt.column}
+				if p == moves {
+					t.Fatal("unexpected error")
+				}
+			}
+		}
 
 		for _, tt := range tests {
 			err := board.PutPiece(tt.row, tt.column, reversi.PieceBlack)

@@ -47,20 +47,8 @@ func NewBoard() Board {
 	return b
 }
 
-func (b *Board) PutPiece(row, col int, piece Piece) error {
-	if b[row][col] != CellEmpty {
-		return fmt.Errorf("cell is not empty")
-	}
-	b[row][col] = cellFromPiece(piece)
-	return nil
-}
-
 type Position struct {
 	Row, Column int
-}
-
-func (b *Board) isPlaced(row, column int) bool {
-	return b[row][column] != CellEmpty
 }
 
 func (b *Board) isInBoard(row, column int) bool {
@@ -72,16 +60,49 @@ func (b *Board) collectFlippableInDirection(row, column, dy, dx int, piece Piece
 	column += dx
 	for b.isInBoard(row, column) {
 		switch b[row][column] {
-		case CellEmpty:
-			return nil
+		case cellFromPiece(piece.Opponent()):
+			flips = append(flips, Position{row, column})
 		case cellFromPiece(piece):
 			return flips
-		default:
-			flips = append(flips, Position{row, column})
+		case CellEmpty:
+			return []Position{}
 		}
 		row += dy
 		column += dx
 	}
+	return []Position{}
+}
+
+func (b *Board) collectFlippable(row, col int, piece Piece) (flips []Position) {
+	dirs := []struct{ x, y int }{
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1}, {0, 1},
+		{1, -1}, {1, 0}, {1, 1},
+	}
+	for _, dir := range dirs {
+		dx, dy := dir.x, dir.y
+		flipsInDir := b.collectFlippableInDirection(row, col, dy, dx, piece)
+		flips = append(flips, flipsInDir...)
+	}
+	return flips
+}
+
+func (b *Board) isPlaced(row, column int) bool {
+	return b[row][column] != CellEmpty
+}
+
+func (b *Board) PutPiece(row, col int, piece Piece) error {
+	if b.isPlaced(row, col) {
+		return fmt.Errorf("cell is not empty")
+	}
+	flips := b.collectFlippable(row, col, piece)
+	if len(flips) == 0 {
+		return fmt.Errorf("flippable piece not exists")
+	}
+	for _, flip := range flips {
+		b[flip.Row][flip.Column] = cellFromPiece(piece)
+	}
+	b[row][col] = cellFromPiece(piece)
 	return nil
 }
 
