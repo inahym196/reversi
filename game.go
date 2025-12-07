@@ -1,6 +1,8 @@
 package reversi
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Piece bool
 
@@ -13,6 +15,17 @@ func (p Piece) Opponent() Piece {
 	return !p
 }
 
+func (p Piece) String() string {
+	switch p {
+	case PieceBlack:
+		return "PieceBlack"
+	case PieceWhite:
+		return "PieceWhite"
+	default:
+		panic("invalid piece")
+	}
+}
+
 type Cell byte
 
 const (
@@ -20,6 +33,19 @@ const (
 	CellBlack
 	CellWhite
 )
+
+func (c Cell) String() string {
+	switch c {
+	case CellEmpty:
+		return "CellEmpty"
+	case CellBlack:
+		return "CellBlack"
+	case CellWhite:
+		return "CellWhite"
+	default:
+		panic("invalid cell")
+	}
+}
 
 func cellFromPiece(p Piece) Cell {
 	switch p {

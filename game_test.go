@@ -7,37 +7,42 @@ import (
 	"github.com/inahym196/reversi"
 )
 
+const (
+	E = reversi.CellEmpty
+	B = reversi.CellBlack
+	W = reversi.CellWhite
+)
+
+func assertBoardState(t *testing.T, board reversi.Board, expected [][]reversi.Cell) {
+	t.Helper()
+
+	for row := range expected {
+		for col := range expected[row] {
+			if board[row][col] != expected[row][col] {
+				t.Errorf("board[%d][%d]: expected %v, got %v",
+					row, col, expected[row][col], board[row][col])
+			}
+		}
+	}
+}
+
 func TestNewBoard(t *testing.T) {
 	board := reversi.NewBoard()
 
-	tests := []struct {
-		row, col int
-		want     reversi.Cell
-	}{
-		{3, 3, reversi.CellWhite},
-		{3, 4, reversi.CellBlack},
-		{4, 3, reversi.CellBlack},
-		{4, 4, reversi.CellWhite},
-	}
-	for _, tt := range tests {
-		if got := board[tt.row][tt.col]; got != tt.want {
-			t.Errorf("expected board[%d][%d] = %v, got %v", tt.row, tt.col, tt.want, got)
+	t.Run("初期ボード", func(t *testing.T) {
+		expected := [][]reversi.Cell{
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, W, B, E, E, E},
+			{E, E, E, B, W, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
 		}
-	}
+		assertBoardState(t, board, expected)
+	})
 
-	for row := range reversi.BoardWidth {
-		for col := range reversi.BoardWidth {
-			if (row == 3 && col == 3) ||
-				(row == 3 && col == 4) ||
-				(row == 4 && col == 3) ||
-				(row == 4 && col == 4) {
-				continue
-			}
-			if board[row][col] != reversi.CellEmpty {
-				t.Errorf("expected board[%d][%d] to be Empty, got %v", row, col, board[row][col])
-			}
-		}
-	}
 	nextMoves := board.GetNextMoves(reversi.PieceBlack)
 	expected := []reversi.Position{
 		{Row: 2, Column: 3},
@@ -59,36 +64,17 @@ func TestBoard_PutPiece(t *testing.T) {
 
 		board.PutPiece(2, 3, reversi.PieceBlack)
 
-		tests := []struct {
-			row, col int
-			want     reversi.Cell
-		}{
-			{2, 3, reversi.CellBlack},
-			{3, 3, reversi.CellBlack},
-			{3, 4, reversi.CellBlack},
-			{4, 3, reversi.CellBlack},
-			{4, 4, reversi.CellWhite},
+		expected := [][]reversi.Cell{
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, B, E, E, E, E},
+			{E, E, E, B, B, E, E, E},
+			{E, E, E, B, W, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
+			{E, E, E, E, E, E, E, E},
 		}
-		for _, tt := range tests {
-			if got := board[tt.row][tt.col]; got != tt.want {
-				t.Errorf("expected board[%d][%d] = %v, got %v", tt.row, tt.col, tt.want, got)
-			}
-		}
-
-		for row := range reversi.BoardWidth {
-			for col := range reversi.BoardWidth {
-				if (row == 2 && col == 3) ||
-					(row == 3 && col == 3) ||
-					(row == 3 && col == 4) ||
-					(row == 4 && col == 3) ||
-					(row == 4 && col == 4) {
-					continue
-				}
-				if board[row][col] != reversi.CellEmpty {
-					t.Errorf("expected board[%d][%d] to be Empty, got %v", row, col, board[row][col])
-				}
-			}
-		}
+		assertBoardState(t, board, expected)
 	})
 	t.Run("NextMoves以外には配置できない", func(t *testing.T) {
 		tests := []struct {
@@ -136,7 +122,7 @@ func TestNewGame(t *testing.T) {
 	t.Run("最初のnextPieceはBlack", func(t *testing.T) {
 		nextPiece := game.NextPiece()
 		if nextPiece != reversi.PieceBlack {
-			t.Errorf("expected PieceBlack(%t), got %t", reversi.PieceBlack, nextPiece)
+			t.Errorf("expected %v, got %v", reversi.PieceBlack, nextPiece)
 		}
 	})
 }
@@ -156,7 +142,7 @@ func TestGame_PutPiece(t *testing.T) {
 			t.Fatalf("expected nil, got %v", err)
 		}
 		if game.NextPiece() != reversi.PieceWhite {
-			t.Errorf("expected PieceWhite(%t), got %t", reversi.PieceWhite, game.NextPiece())
+			t.Errorf("expected %v, got %v", reversi.PieceWhite, game.NextPiece())
 		}
 	})
 	t.Run("ピースを置くとnextMovesが変わる", func(t *testing.T) {
