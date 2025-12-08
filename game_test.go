@@ -2,6 +2,7 @@ package reversi_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/inahym196/reversi"
@@ -127,6 +128,33 @@ func TestNewGame(t *testing.T) {
 	})
 }
 
+func ParseMoves(s string) [][2]int {
+	parts := strings.Fields(s)
+	moves := make([][2]int, 0, len(parts))
+	for _, p := range parts {
+		col := int(p[0] - 'a')
+		row := int(p[1] - '1')
+		moves = append(moves, [2]int{row, col})
+	}
+	return moves
+}
+
+func ParseMovesCompact(s string) [][2]int {
+	if len(s)%2 != 0 {
+		return nil
+	}
+	moves := make([][2]int, 0, len(s)/2)
+	for i := 0; i < len(s); i += 2 {
+		colChar := s[i]
+		rowChar := s[i+1]
+
+		col := int(colChar - 'a')
+		row := int(rowChar - '1')
+		moves = append(moves, [2]int{row, col})
+	}
+	return moves
+}
+
 func RunScenario(t *testing.T, moves [][2]int, expectedWinner reversi.Winner) {
 	t.Helper()
 
@@ -182,26 +210,15 @@ func TestGame_PutPiece(t *testing.T) {
 	})
 
 	t.Run("黒勝利の最短決着", func(t *testing.T) {
-		moves := [][2]int{
-			{4, 5}, {5, 3}, {4, 2}, {3, 5}, {6, 4},
-			{5, 5}, {4, 6}, {5, 4}, {2, 4},
-		}
+		moves := ParseMovesCompact("f5d6c5f4e7f6g5e6e3")
 		RunScenario(t, moves, reversi.WinnerBlack)
 	})
 	t.Run("白勝利の最短決着", func(t *testing.T) {
-		moves := [][2]int{
-			{4, 5}, {5, 5}, {5, 4}, {3, 5}, {2, 4},
-			{1, 3}, {2, 3}, {5, 3}, {3, 2}, {3, 1},
-		}
+		moves := ParseMovesCompact("f5f6e6f4e3d2d3d6c4b4")
 		RunScenario(t, moves, reversi.WinnerWhite)
 	})
 	t.Run("引き分け決着", func(t *testing.T) {
-		moves := [][2]int{
-			{5, 4}, {5, 3}, {2, 2}, {5, 5}, {6, 6},
-			{5, 6}, {5, 2}, {7, 6}, {5, 7}, {1, 1},
-			{7, 5}, {4, 6}, {7, 7}, {4, 2}, {3, 6},
-			{6, 2}, {5, 1}, {5, 0}, {0, 0}, {2, 4},
-		}
+		moves := ParseMovesCompact("f5f4c3f6g7f7f3h7f8b2h6e7h8e3d7g3f2f1a1c5")
 		RunScenario(t, moves, reversi.WinnerDraw)
 	})
 }
