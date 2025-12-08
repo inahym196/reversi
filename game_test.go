@@ -27,30 +27,27 @@ func assertBoardState(t *testing.T, board reversi.Board, expected [][]reversi.Ce
 	}
 }
 
+var initBoard = [][]reversi.Cell{
+	{E, E, E, E, E, E, E, E},
+	{E, E, E, E, E, E, E, E},
+	{E, E, E, B, E, E, E, E},
+	{E, E, E, B, B, E, E, E},
+	{E, E, E, B, W, E, E, E},
+	{E, E, E, E, E, E, E, E},
+	{E, E, E, E, E, E, E, E},
+	{E, E, E, E, E, E, E, E},
+}
+
 func TestNewBoard(t *testing.T) {
 	board := reversi.NewBoard()
 
 	t.Run("初期ボード", func(t *testing.T) {
-		expected := [][]reversi.Cell{
-			{E, E, E, E, E, E, E, E},
-			{E, E, E, E, E, E, E, E},
-			{E, E, E, E, E, E, E, E},
-			{E, E, E, W, B, E, E, E},
-			{E, E, E, B, W, E, E, E},
-			{E, E, E, E, E, E, E, E},
-			{E, E, E, E, E, E, E, E},
-			{E, E, E, E, E, E, E, E},
-		}
+		expected := initBoard
 		assertBoardState(t, board, expected)
 	})
 
 	nextMoves := board.GetNextMoves(reversi.PieceBlack)
-	expected := []reversi.Position{
-		{Row: 2, Column: 3},
-		{Row: 3, Column: 2},
-		{Row: 4, Column: 5},
-		{Row: 5, Column: 4},
-	}
+	expected := []reversi.Position{{2, 3}, {3, 2}, {4, 5}, {5, 4}}
 	for i := range nextMoves {
 		if nextMoves[i] != expected[i] {
 			t.Error("error")
@@ -102,9 +99,7 @@ func TestBoard_PutPiece(t *testing.T) {
 			if err == nil {
 				t.Errorf("expected something error, got %v", err)
 			}
-			if board[tt.row][tt.column] != tt.cell {
-				t.Errorf("expected %d, got %d", tt.cell, board[tt.row][tt.column])
-			}
+			assertBoardState(t, board, initBoard)
 		}
 	})
 }
