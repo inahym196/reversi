@@ -158,4 +158,101 @@ func TestGame_PutPiece(t *testing.T) {
 			t.Errorf("expected %v, got %v", reversi.WinnerNone, game.Winner())
 		}
 	})
+
+	t.Run("黒勝利の最短決着", func(t *testing.T) {
+		game := reversi.NewGame()
+		tests := []struct {
+			row    int
+			col    int
+			piece  reversi.Piece
+			winner reversi.Winner
+		}{
+			{4, 5, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 3, reversi.PieceWhite, reversi.WinnerNone},
+			{4, 2, reversi.PieceBlack, reversi.WinnerNone},
+			{3, 5, reversi.PieceWhite, reversi.WinnerNone},
+			{6, 4, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 5, reversi.PieceWhite, reversi.WinnerNone},
+			{4, 6, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 4, reversi.PieceWhite, reversi.WinnerNone},
+			{2, 4, reversi.PieceBlack, reversi.WinnerBlack},
+		}
+		for i, tt := range tests {
+			err := game.PutPiece(tt.row, tt.col, tt.piece)
+			if err != nil {
+				t.Fatalf("turn %d err: expected nil, got %v", i, err)
+			}
+			if game.Winner() != tt.winner {
+				t.Errorf("turn %d winner: expected %v, got %v", i, tt.winner, game.Winner())
+			}
+		}
+	})
+	t.Run("白勝利の最短決着", func(t *testing.T) {
+		game := reversi.NewGame()
+		tests := []struct {
+			row    int
+			col    int
+			piece  reversi.Piece
+			winner reversi.Winner
+		}{
+			{4, 5, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 5, reversi.PieceWhite, reversi.WinnerNone},
+			{5, 4, reversi.PieceBlack, reversi.WinnerNone},
+			{3, 5, reversi.PieceWhite, reversi.WinnerNone},
+			{2, 4, reversi.PieceBlack, reversi.WinnerNone},
+			{1, 3, reversi.PieceWhite, reversi.WinnerNone},
+			{2, 3, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 3, reversi.PieceWhite, reversi.WinnerNone},
+			{3, 2, reversi.PieceBlack, reversi.WinnerNone},
+			{3, 1, reversi.PieceWhite, reversi.WinnerWhite},
+		}
+		for i, tt := range tests {
+			err := game.PutPiece(tt.row, tt.col, tt.piece)
+			if err != nil {
+				t.Fatalf("turn %d err: expected nil, got %v", i, err)
+			}
+			if game.Winner() != tt.winner {
+				t.Errorf("turn %d winner: expected %v, got %v", i, tt.winner, game.Winner())
+			}
+		}
+	})
+	t.Run("引き分け決着", func(t *testing.T) {
+		game := reversi.NewGame()
+		tests := []struct {
+			row    int
+			col    int
+			piece  reversi.Piece
+			winner reversi.Winner
+		}{
+			{5, 4, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 3, reversi.PieceWhite, reversi.WinnerNone},
+			{2, 2, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 5, reversi.PieceWhite, reversi.WinnerNone},
+			{6, 6, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 6, reversi.PieceWhite, reversi.WinnerNone},
+			{5, 2, reversi.PieceBlack, reversi.WinnerNone},
+			{7, 6, reversi.PieceWhite, reversi.WinnerNone},
+			{5, 7, reversi.PieceBlack, reversi.WinnerNone},
+			{1, 1, reversi.PieceWhite, reversi.WinnerNone},
+			{7, 5, reversi.PieceBlack, reversi.WinnerNone},
+			{4, 6, reversi.PieceWhite, reversi.WinnerNone},
+			{7, 7, reversi.PieceBlack, reversi.WinnerNone},
+			{4, 2, reversi.PieceWhite, reversi.WinnerNone},
+			{3, 6, reversi.PieceBlack, reversi.WinnerNone},
+			{6, 2, reversi.PieceWhite, reversi.WinnerNone},
+			{5, 1, reversi.PieceBlack, reversi.WinnerNone},
+			{5, 0, reversi.PieceWhite, reversi.WinnerNone},
+			{0, 0, reversi.PieceBlack, reversi.WinnerNone},
+			{2, 4, reversi.PieceWhite, reversi.WinnerDraw},
+		}
+		for i, tt := range tests {
+			err := game.PutPiece(tt.row, tt.col, tt.piece)
+			if err != nil {
+				t.Fatalf("turn %d err: expected nil, got %v", i, err)
+			}
+			if game.Winner() != tt.winner {
+				t.Errorf("turn %d winner: expected %v, got %v", i, tt.winner, game.Winner())
+			}
+		}
+	})
 }

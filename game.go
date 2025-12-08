@@ -24,7 +24,7 @@ func (p Piece) String() string {
 	}
 }
 
-type Cell byte
+type Cell uint8
 
 const (
 	CellEmpty Cell = iota
@@ -75,11 +75,11 @@ type Position struct {
 	Row, Column int
 }
 
-func (b *Board) isInBoard(row, column int) bool {
+func (b Board) isInBoard(row, column int) bool {
 	return 0 <= row && row < BoardWidth && 0 <= column && column < BoardWidth
 }
 
-func (b *Board) collectFlippableInDirection(row, column, dy, dx int, piece Piece) (flips []Position) {
+func (b Board) collectFlippableInDirection(row, column, dy, dx int, piece Piece) (flips []Position) {
 	row += dy
 	column += dx
 	for b.isInBoard(row, column) {
@@ -97,7 +97,7 @@ func (b *Board) collectFlippableInDirection(row, column, dy, dx int, piece Piece
 	return []Position{}
 }
 
-func (b *Board) collectFlippable(row, col int, piece Piece) (flips []Position) {
+func (b Board) collectFlippable(row, col int, piece Piece) (flips []Position) {
 	dirs := []struct{ x, y int }{
 		{-1, -1}, {-1, 0}, {-1, 1},
 		{0, -1}, {0, 1},
@@ -111,7 +111,7 @@ func (b *Board) collectFlippable(row, col int, piece Piece) (flips []Position) {
 	return flips
 }
 
-func (b *Board) isPlaced(row, column int) bool {
+func (b Board) isPlaced(row, column int) bool {
 	return b[row][column] != CellEmpty
 }
 
@@ -130,7 +130,7 @@ func (b *Board) PutPiece(row, col int, piece Piece) error {
 	return nil
 }
 
-func (b *Board) canFlipPieces(row, column int, piece Piece) bool {
+func (b Board) canFlipPieces(row, column int, piece Piece) bool {
 	dirs := []struct{ x, y int }{
 		{-1, -1}, {-1, 0}, {-1, 1},
 		{0, -1}, {0, 1},
@@ -145,7 +145,7 @@ func (b *Board) canFlipPieces(row, column int, piece Piece) bool {
 	return false
 }
 
-func (b *Board) GetNextMoves(piece Piece) (nextMoves []Position) {
+func (b Board) GetNextMoves(piece Piece) (nextMoves []Position) {
 	for row := range BoardWidth {
 		for col := range BoardWidth {
 			if !b.isPlaced(row, col) && b.canFlipPieces(row, col, piece) {
@@ -156,12 +156,27 @@ func (b *Board) GetNextMoves(piece Piece) (nextMoves []Position) {
 	return nextMoves
 }
 
-type Winner byte
+func (b Board) GetPieceCount() (black, white uint8) {
+	for row := range BoardWidth {
+		for col := range BoardWidth {
+			switch b[row][col] {
+			case CellBlack:
+				black++
+			case CellWhite:
+				white++
+			}
+		}
+	}
+	return black, white
+}
+
+type Winner uint8
 
 const (
 	WinnerNone Winner = iota
 	WinnerWhite
 	WinnerBlack
+	WinnerDraw
 )
 
 func (w Winner) String() string {
@@ -172,6 +187,8 @@ func (w Winner) String() string {
 		return "WinnerWhite"
 	case WinnerBlack:
 		return "WinnerBlack"
+	case WinnerDraw:
+		return "WinnerDraw"
 	default:
 		panic("invalid winner")
 	}
@@ -182,6 +199,7 @@ type Game struct {
 	nextPiece Piece
 	nextMoves []Position
 	winner    Winner
+	skipped   bool
 }
 
 func NewGame() *Game {
@@ -191,32 +209,56 @@ func NewGame() *Game {
 		nextPiece: PieceBlack,
 		nextMoves: board.GetNextMoves(PieceBlack),
 		winner:    Winner(WinnerNone),
+		skipped:   false,
 	}
 }
 
-func (g Game) Board() Board {
-	return g.board
-}
+func (g Game) Board() Board          { return g.board }
+func (g Game) NextPiece() Piece      { return g.nextPiece }
+func (g Game) NextMoves() []Position { return g.nextMoves }
+func (g Game) Winner() Winner        { return g.winner }
+func (g Game) Skipped() bool         { return g.skipped }
 
-func (g Game) NextPiece() Piece {
-	return g.nextPiece
-}
-
-func (g Game) NextMoves() []Position {
-	return g.nextMoves
-}
-
-func (g Game) Winner() Winner {
-	return g.winner
-}
-
-func (g *Game) isInNextMoves(row, col int) bool {
+func (g Game) isInNextMoves(row, col int) bool {
 	for _, move := range g.nextMoves {
 		if row == move.Row && col == move.Column {
 			return true
 		}
 	}
 	return false
+}
+
+func (g Game) judgeWinner() Winner {
+	b, w := g.board.GetPieceCount()
+	switch {
+	case b > w:
+		return WinnerBlack
+	case b < w:
+		return WinnerWhite
+	default:
+		return WinnerDraw
+	}
+}
+
+func (g *Game) Tick() {
+	nextPiece := g.nextPiece.Opponent()
+	nextMoves := g.board.GetNextMoves(nextPiece)
+	skipped := false
+	if len(nextMoves) == 0 {
+		nextPiece = nextPiece.Opponent()
+		nextMoves = g.board.GetNextMoves(nextPiece)
+		skipped = true
+
+		if len(nextMoves) == 0 {
+			g.winner = g.judgeWinner()
+			g.nextMoves = []Position{}
+			g.skipped = skipped
+			return
+		}
+	}
+	g.nextPiece = nextPiece
+	g.nextMoves = nextMoves
+	g.skipped = skipped
 }
 
 func (g *Game) PutPiece(row, col int, piece Piece) error {
@@ -227,7 +269,6 @@ func (g *Game) PutPiece(row, col int, piece Piece) error {
 		return fmt.Errorf("無効な配置場所です")
 	}
 	g.board.PutPiece(row, col, piece)
-	g.nextPiece = g.nextPiece.Opponent()
-	g.nextMoves = g.board.GetNextMoves(g.nextPiece)
+	g.Tick()
 	return nil
 }
