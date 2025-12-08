@@ -128,6 +128,39 @@ func TestNewGame(t *testing.T) {
 	})
 }
 
+func TestGame_PutPiece(t *testing.T) {
+	t.Run("nextPiece以外は置けない", func(t *testing.T) {
+		game := reversi.NewGame()
+		err := game.PutPiece(2, 3, reversi.PieceWhite)
+		if err == nil {
+			t.Error("エラーが出るはずなのに出ていない")
+		}
+	})
+	t.Run("NextMovesへ置くとNextPieceとNextMovesが更新され、Winnerは更新されない", func(t *testing.T) {
+		game := reversi.NewGame()
+		err := game.PutPiece(2, 3, reversi.PieceBlack)
+
+		if err != nil {
+			t.Fatalf("expected nil, got %v", err)
+		}
+		board := game.Board()
+		if board[2][3] != reversi.CellBlack {
+			t.Errorf("expected %v, got %v", reversi.CellBlack, board[2][3])
+		}
+		if game.NextPiece() != reversi.PieceWhite {
+			t.Errorf("expected %v, got %v", reversi.PieceWhite, game.NextPiece())
+		}
+		expected := []reversi.Position{{2, 2}, {2, 4}, {4, 2}}
+		nextMoves := game.NextMoves()
+		if !reflect.DeepEqual(expected, nextMoves) {
+			t.Errorf("expected %v, got %v", expected, nextMoves)
+		}
+		if game.Winner() != reversi.WinnerNone {
+			t.Errorf("expected %v, got %v", reversi.WinnerNone, game.Winner())
+		}
+	})
+}
+
 func ParseMoves(s string) [][2]int {
 	parts := strings.Fields(s)
 	moves := make([][2]int, 0, len(parts))
@@ -177,48 +210,20 @@ func RunScenario(t *testing.T, moves [][2]int, expectedWinner reversi.Winner) {
 	}
 }
 
-func TestGame_PutPiece(t *testing.T) {
-	t.Run("nextPiece以外は置けない", func(t *testing.T) {
-		game := reversi.NewGame()
-		err := game.PutPiece(2, 3, reversi.PieceWhite)
-		if err == nil {
-			t.Error("エラーが出るはずなのに出ていない")
-		}
-	})
-	t.Run("NextMovesへ置くとNextPieceとNextMovesが更新され、Winnerは更新されない", func(t *testing.T) {
-		game := reversi.NewGame()
-		err := game.PutPiece(2, 3, reversi.PieceBlack)
-
-		if err != nil {
-			t.Fatalf("expected nil, got %v", err)
-		}
-		board := game.Board()
-		if board[2][3] != reversi.CellBlack {
-			t.Errorf("expected %v, got %v", reversi.CellBlack, board[2][3])
-		}
-		if game.NextPiece() != reversi.PieceWhite {
-			t.Errorf("expected %v, got %v", reversi.PieceWhite, game.NextPiece())
-		}
-		expected := []reversi.Position{{2, 2}, {2, 4}, {4, 2}}
-		nextMoves := game.NextMoves()
-		if !reflect.DeepEqual(expected, nextMoves) {
-			t.Errorf("expected %v, got %v", expected, nextMoves)
-		}
-		if game.Winner() != reversi.WinnerNone {
-			t.Errorf("expected %v, got %v", reversi.WinnerNone, game.Winner())
-		}
-	})
-
-	t.Run("黒勝利の最短決着", func(t *testing.T) {
-		moves := ParseMovesCompact("f5d6c5f4e7f6g5e6e3")
-		RunScenario(t, moves, reversi.WinnerBlack)
-	})
-	t.Run("白勝利の最短決着", func(t *testing.T) {
-		moves := ParseMovesCompact("f5f6e6f4e3d2d3d6c4b4")
-		RunScenario(t, moves, reversi.WinnerWhite)
-	})
-	t.Run("引き分け決着", func(t *testing.T) {
-		moves := ParseMovesCompact("f5f4c3f6g7f7f3h7f8b2h6e7h8e3d7g3f2f1a1c5")
-		RunScenario(t, moves, reversi.WinnerDraw)
-	})
+func TestGame_PutPiece_Winner(t *testing.T) {
+	tests := []struct {
+		name           string
+		record         string
+		expectedWinner reversi.Winner
+	}{
+		{"黒勝利", "f5d6c5f4e7f6g5e6e3", reversi.WinnerBlack},
+		{"白勝利", "f5f6e6f4e3d2d3d6c4b4", reversi.WinnerWhite},
+		{"引き分け", "f5f4c3f6g7f7f3h7f8b2h6e7h8e3d7g3f2f1a1c5", reversi.WinnerDraw},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			moves := ParseMovesCompact(tt.record)
+			RunScenario(t, moves, tt.expectedWinner)
+		})
+	}
 }
